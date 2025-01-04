@@ -1,0 +1,62 @@
+name: Monthly update full data
+
+on:
+  schedule:
+    # Runs at first day of month
+    - cron: '0 0 1 * *'
+
+env:
+  token: ${{ secrets.MY_TOKEN }}
+
+jobs:
+  monthly-update-full-data:
+    runs-on: ubuntu-latest
+    permissions:                # Job-level permissions configuration starts here
+      contents: write           # 'write' access to repository contents
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.MY_TOKEN }}
+      # Step 2: Setup Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x' # Install the Python version needed
+
+      # Step 3: Install dependencies
+      - name: Install pandas
+        run: pip install pandas
+
+      # Step 4: Install openpyxl
+      - name: Install openpyxl
+        run: pip install openpyxl
+      
+      # Step 5: Install requests
+      - name: Install requests
+        run: pip install requests
+
+      # Step 6: Install validators
+      - name: Install validators
+        run: pip install validators
+
+      # Step 7: Execute the Python script to update full data
+      - name: Generate full data
+        run: python main.py
+
+      # Step 8: Commit and push the generated full data file if there are changes
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -a -m "Update full data"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.MY_TOKEN }}
+          branch: ${{ github.ref }}
+          directory: .
+          force: true
+      
